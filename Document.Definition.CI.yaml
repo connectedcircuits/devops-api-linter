@@ -1,0 +1,38 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: windows-latest
+
+variables:
+  schemaRules: "Stoplight.Spectral\\Ruleset\\rules.yaml"
+
+resources:
+ repositories:
+    - repository: definition
+      type: git
+      name: Petshop\Documentation
+      ref: main
+    - repository: linter
+      type: git
+      name: Linter\Stoplight.Spectral
+      ref: main
+
+steps:
+- checkout: definition
+- checkout: linter
+
+- task: Npm@1
+  displayName: 'Installing Stoplight Spectral.'
+  inputs:
+    command: custom   
+    verbose: false
+    customCommand: 'install -g @stoplight/spectral'
+
+- script: spectral lint "$(Build.Repository.Name)\schema\*.{json,yml,yaml}" --ruleset $(schemaRules)
+  displayName: 'Lint API definition'

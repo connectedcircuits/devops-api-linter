@@ -1,0 +1,78 @@
+extends: spectral:oas
+rules:
+  rule-important-info-fields:
+    description: Absolutely must have the info information
+    message: "Missing the {{property}}"
+    given: "$.info"
+    severity: error
+    then:
+     - field: "title"
+       function: truthy
+     - field: "description"
+       function: truthy
+     - field: "version"
+       function: truthy
+ 
+  rule-path-description:
+    description: Each operation must have a description which cannot be empty.
+    given: $.paths.[*][get,post,put,delete,options]
+    severity: error
+    then:
+      field: description
+      function: truthy
+ 
+  rule-camel-case-operation-id:
+    description: OperationId should be pascalCased.
+    type: style
+    given: $.paths.[*][get,post,put,delete,options]
+    then:
+      field: operationId
+      function: casing
+      functionOptions:
+        type: pascal
+  
+  rule-camel-case-parameter-name:
+    description: Parameter name should be camelCased.
+    message: "The value '{{value}}' should be camel cased."
+    type: style
+    given: $.paths.[*][get,post,put,delete,options].parameters[*]
+    severity: error
+    resolved: false
+    then:
+      field: name
+      function: casing
+      functionOptions:
+        type: camel
+ 
+  rule-operation-singular-tag:
+    description: Operations must have at least one tag value.
+    type: style
+    given: $.paths.[*][get,post,put,delete,options]
+    severity: error
+    then:
+      field: tags
+      function: length
+      functionOptions:
+        min: 1
+ 
+  rule-path-no-trailing-slash:
+    description: Paths should not end with `#/`.
+    type: style
+    given: "$.paths[*]~"
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: ".+\/$"
+ 
+  rule-path-lower-case-id:
+    description: Resource identifier in path should be represented as 'xxxId', eg CustomerId.
+    type: style
+    given: "$.paths[*]~"
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: "{\\w*id}"
+ 
+  oas3-api-servers: error
